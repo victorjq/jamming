@@ -81,7 +81,7 @@ export default function App() {
   return (
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h1 style={{ margin: 0 }}>Jammming</h1>
+        <h1 style={{ margin: 0 }}>AURORA MIX</h1>
         {!authed ? (
           <button onClick={() => Spotify.authorize()}>Log in with Spotify</button>
         ) : (

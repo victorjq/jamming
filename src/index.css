@@ -1,6 +1,6 @@
-/* ===== Jammming minimal dark theme ===== */
+/* ===== Jammming minimal dark theme (with animated aurora) ===== */
 :root{
-  --bg: #0b0f17;
+  --bg: #070a12;
   --panel: rgba(255,255,255,0.06);
   --panel-border: rgba(255,255,255,0.12);
   --text: #e6e9ef;
@@ -18,13 +18,32 @@ html, body, #root { height: 100%; }
 body{
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-  background:
-    radial-gradient(1200px 600px at 20% -10%, #12203a 0%, transparent 60%),
-    radial-gradient(1000px 800px at 120% 20%, #1b2a4b 0%, transparent 60%),
-    var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Animated aurora gradient */
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(28, 64, 150, 0.45) 0%, transparent 60%),
+              radial-gradient(1000px 800px at 120% 20%, rgba(255, 98, 0, 0.35) 0%, transparent 60%),
+              linear-gradient(120deg, #0b1430 0%, #081326 30%, #121f3a 60%, #1a1640 100%);
+  background-size: 140% 140%, 130% 130%, 100% 100%;
+  animation: auroraShift 20s ease-in-out infinite;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* soft star particles */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 60%, rgba(255,255,255,0.35), transparent 60%),
+    radial-gradient(1.8px 1.8px at 40% 80%, rgba(255,255,255,0.4), transparent 60%),
+    radial-gradient(1.2px 1.2px at 85% 25%, rgba(255,255,255,0.3), transparent 60%);
+  animation: twinkle 6s ease-in-out infinite alternate;
 }
 
 /* Header */
@@ -36,8 +55,20 @@ main > header{
   box-shadow: var(--shadow);
 }
 
+/* Title styling: all caps + sci-fi font */
 h1, h2 { margin: 0; line-height: 1.2; }
-h1{ font-size: 28px; letter-spacing: 0.2px; }
+h1{
+  text-transform: uppercase;
+  font-family: 'Orbitron', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #a3c7ff, #ffe3a3, #d1b3ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(79,140,255,0.25));
+}
 h2{ font-size: 18px; color: var(--muted); margin-bottom: 10px; }
 
 /* Panels (Results, Playlist) */
@@ -90,7 +121,7 @@ section button[aria-label]{
   line-height: 1;
 }
 
-/* Track rows (works with your current markup) */
+/* Track rows */
 section > div > div{
   display: grid;
   grid-template-columns: 1fr auto;
@@ -113,12 +144,23 @@ section > div > div > div:first-child > div:last-child{ /* artist • album */
   color: var(--muted);
 }
 
-/* Tiny status/error messages (optional tweak applied) */
+/* Tiny status/error messages */
 .status{ margin: 8px 0; font-size: 14px; }
 .error{ margin: 8px 0; font-size: 14px; color: #ffb3b3; }
 
-/* Responsive: stack columns on small screens */
+/* Responsive */
 @media (max-width: 820px){
   main{ padding: 16px; }
   section{ margin-bottom: 14px; }
+}
+
+/* ===== Animations ===== */
+@keyframes auroraShift{
+  0%   { background-position: 0% 0%, 100% 0%, 0% 0%; }
+  50%  { background-position: 100% 20%, 0% 30%, 0% 0%; }
+  100% { background-position: 0% 0%, 100% 0%, 0% 0%; }
+}
+@keyframes twinkle{
+  0%   { opacity: .35; transform: translateY(0px); }
+  100% { opacity: .55; transform: translateY(-4px); }
 }
