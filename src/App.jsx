@@ -1,21 +1,40 @@
-import { useState } from "react";
+// src/App.jsx
+import { useEffect, useState } from "react";
 import SearchBar from "./components/SearchBar.jsx";
 import SearchResults from "./components/SearchResults.jsx";
 import Playlist from "./components/Playlist.jsx";
+import Spotify from "./services/spotify.js";
 
 export default function App() {
-  // Mock search results
-  const [results] = useState([
+  // UI state
+  const [authed, setAuthed] = useState(false);
+  const [results, setResults] = useState([
+    // mock results before real search
     { id: "1", name: "Lose Yourself", artist: "Eminem", album: "8 Mile", uri: "spotify:track:1" },
     { id: "2", name: "Numb", artist: "Linkin Park", album: "Meteora", uri: "spotify:track:2" },
     { id: "3", name: "HUMBLE.", artist: "Kendrick Lamar", album: "DAMN.", uri: "spotify:track:3" },
   ]);
-
-  // Playlist state
   const [playlistName, setPlaylistName] = useState("New Playlist");
   const [playlistTracks, setPlaylistTracks] = useState([]);
 
-  // Add from results (no duplicates)
+  // Handle auth callback and token refresh on load
+  useEffect(() => {
+    (async () => {
+      await Spotify.init();                 // store tokens if returning from Spotify
+      setAuthed(await Spotify.isAuthed());  // true if token is valid or refreshable
+    })();
+  }, []);
+
+  // Search handler
+  const handleSearch = async (term) => {
+    if (!term) return;
+    const hasToken = await Spotify.isAuthed();
+    if (!hasToken) return Spotify.authorize();
+    const found = await Spotify.search(term);
+    setResults(found);
+  };
+
+  // Add from results
   const addTrack = (track) => {
     setPlaylistTracks((prev) => (prev.some((t) => t.id === track.id) ? prev : [...prev, track]));
   };
@@ -25,20 +44,31 @@ export default function App() {
     setPlaylistTracks((prev) => prev.filter((t) => t.id !== track.id));
   };
 
-  // STEP 9: Save (mock) + reset
-  const savePlaylist = () => {
+  // Save to Spotify then reset
+  const savePlaylist = async () => {
     const uris = playlistTracks.map((t) => t.uri);
-    console.log("Saving to Spotify (mock):", { name: playlistName, trackUris: uris });
-    alert(`Saved "${playlistName}" with ${uris.length} tracks (mock)`);
-
-    // Reset after "save"
+    if (!uris.length) return alert("Add at least one track.");
+    const hasToken = await Spotify.isAuthed();
+    if (!hasToken) return Spotify.authorize();
+    await Spotify.savePlaylist(playlistName, uris);
+    alert(`Saved "${playlistName}" with ${uris.length} tracks.`);
     setPlaylistName("New Playlist");
     setPlaylistTracks([]);
   };
 
   return (
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
-      <SearchBar onSearch={(t) => console.log("Search", t)} />
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>Jammming</h1>
+        {!authed ? (
+          <button onClick={() => Spotify.authorize()}>Log in with Spotify</button>
+        ) : (
+          <span>Connected</span>
+        )}
+      </header>
+
+      <SearchBar onSearch={handleSearch} />
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         <SearchResults tracks={results} onAdd={addTrack} />
         <Playlist
