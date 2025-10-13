@@ -10,9 +10,13 @@
 //    VITE_REDIRECT_URI=https://victorjq.github.io/jamming/
 //    VITE_SCOPES=playlist-modify-public playlist-modify-private
 
-const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
-const SCOPES = (import.meta.env.VITE_SCOPES || "playlist-modify-public playlist-modify-private").split(" ");
+// src/services/spotify.js
+const CLIENT_ID =
+  import.meta.env.VITE_SPOTIFY_CLIENT_ID || "eb44c2ec87f54cc68b3dd2fe64ff50a0";
+const REDIRECT_URI =
+  import.meta.env.VITE_REDIRECT_URI || "https://victorjq.github.io/jamming/";
+const SCOPES = (import.meta.env.VITE_SCOPES ||
+  "playlist-modify-public playlist-modify-private").split(" ");
 
 const AUTH_URL = "https://accounts.spotify.com/authorize";
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
