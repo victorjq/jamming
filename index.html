@@ -11,5 +11,28 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Background video (auto, muted, inline) -->
+<video
+  id="bgvid"
+  autoplay
+  muted
+  loop
+  playsinline
+  poster="/bg.jpg"
+  aria-hidden="true"
+  tabindex="-1"
+></video>
+
+<!-- Resolve correct path for dev (/) and GitHub Pages (/jamming/) -->
+<script type="module">
+  const el = document.getElementById('bgvid');
+  const base = import.meta.env.BASE_URL || '/';
+  el.src = base + 'bg.mp4';
+  const poster = el.getAttribute('poster');
+  if (poster && !poster.startsWith('http')) {
+    el.setAttribute('poster', base + poster.replace(/^\//, ''));
+  }
+</script>
+
   </body>
 </html>
