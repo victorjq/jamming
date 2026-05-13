@@ -15,11 +15,6 @@ const SCOPES = (
   "playlist-modify-public playlist-modify-private"
 ).split(" ");
 
-// Debug prints (shows in browser console)
-console.log("[spotify.js] CLIENT_ID:", CLIENT_ID);
-console.log("[spotify.js] REDIRECT_URI:", REDIRECT_URI);
-console.log("[spotify.js] SCOPES:", SCOPES.join(" "));
-
 // ---- Constants ----
 const AUTH_URL = "https://accounts.spotify.com/authorize";
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
@@ -29,6 +24,7 @@ const K = {
   refresh: "sp_refresh_token",
   expiry: "sp_token_expiry",
   verifier: "sp_pkce_verifier",
+  state: "sp_auth_state",
 };
 
 // ---- Storage helpers ----
@@ -75,10 +71,9 @@ async function createCodeChallenge(verifier) {
 function randomVerifier(length = 64) {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  let result = "";
-  for (let i = 0; i < length; i++)
-    result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
+  const array = new Uint32Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, (x) => chars[x % chars.length]).join("");
 }
 
 // ---- Token exchange / refresh ----
@@ -146,7 +141,10 @@ async function authorize() {
   }
   const verifier = randomVerifier();
   const challenge = await createCodeChallenge(verifier);
+  const state = randomVerifier(16); // Generate secure state for CSRF protection
+
   setStored(K.verifier, verifier);
+  setStored(K.state, state);
 
   const url = new URL(AUTH_URL);
   url.searchParams.set("client_id", CLIENT_ID);
@@ -155,19 +153,26 @@ async function authorize() {
   url.searchParams.set("code_challenge_method", "S256");
   url.searchParams.set("code_challenge", challenge);
   url.searchParams.set("scope", SCOPES.join(" "));
-  url.searchParams.set("state", Math.random().toString(36).slice(2));
+  url.searchParams.set("state", state);
 
-  // Debug before redirect
-  console.log("[spotify.js] Authorize URL:", url.toString());
   window.location.assign(url.toString());
 }
 
 async function handleRedirectCallback() {
   const url = new URL(window.location.href);
   const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
+
   if (error) throw new Error("Spotify auth error: " + error);
   if (!code) return false;
+
+  // Validate state to prevent CSRF
+  const storedState = getStored(K.state);
+  delStored(K.state);
+  if (!state || state !== storedState) {
+    throw new Error("State mismatch. Potential CSRF attack.");
+  }
 
   const verifier = getStored(K.verifier);
   delStored(K.verifier);
