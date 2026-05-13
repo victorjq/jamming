@@ -1,4 +1,8 @@
-# React + Vite
+# AURORA MIX (Jamming)
+
+You can test this application live at: [https://victorjq.github.io/jamming/](https://victorjq.github.io/jamming/)
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
